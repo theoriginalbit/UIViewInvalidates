@@ -1,11 +1,11 @@
-// swift-tools-version: 5.7
+// swift-tools-version: 5.8
 
 import PackageDescription
 
 let package = Package(
     name: "UIViewInvalidates",
     platforms: [
-        .iOS(.v12),
+        .iOS(.v11),
     ],
     products: [
         .library(name: "UIViewInvalidates", targets: ["UIViewInvalidates"]),
