@@ -1,39 +1,41 @@
 import UIKit
 
 class TestView: UIButton {
-    var setNeedsUpdateConfigurationCalled = false
+	var setNeedsUpdateConfigurationCallCount = 0
 
     @available(iOS 15.0, *)
     override func setNeedsUpdateConfiguration() {
         super.setNeedsUpdateConfiguration()
-        setNeedsUpdateConfigurationCalled = true
+		setNeedsUpdateConfigurationCallCount += 1
     }
 
-    var setNeedsUpdateConstraintsCalled = false
-    
+	var setNeedsUpdateConstraintsCallCount = 0
+
     override func setNeedsUpdateConstraints() {
         super.setNeedsUpdateConstraints()
-        setNeedsUpdateConstraintsCalled = true
+		setNeedsUpdateConstraintsCallCount += 1
     }
 
-    var setNeedsDisplayCallCount = 0 // called on init, so can't be tracked with a bool
+	/// - Note: called on init so consider when testing
+    var setNeedsDisplayCallCount = 0
     
     override func setNeedsDisplay() {
         super.setNeedsDisplay()
         setNeedsDisplayCallCount += 1
     }
 
-    var invalidateIntrinsicContentSizeCalled = false
-    
+	/// - Note: called on init so consider when testing
+    var invalidateIntrinsicContentSizeCallCount = 0
+
     override func invalidateIntrinsicContentSize() {
         super.invalidateIntrinsicContentSize()
-        invalidateIntrinsicContentSizeCalled = true
+        invalidateIntrinsicContentSizeCallCount += 1
     }
 
-    var setNeedsLayoutCalled = false
-    
+	var setNeedsLayoutCallCount = 0
+
     override func setNeedsLayout() {
         super.setNeedsLayout()
-        setNeedsLayoutCalled = true
+        setNeedsLayoutCallCount += 1
     }
 }

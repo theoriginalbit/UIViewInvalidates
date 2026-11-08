@@ -12,11 +12,11 @@ final class InvalidatesTests: XCTestCase {
 
         view.customProperty = "Hello, tests!"
 
-        XCTAssertTrue(view.setNeedsUpdateConfigurationCalled)
-        XCTAssertFalse(view.setNeedsUpdateConstraintsCalled)
+		XCTAssertEqual(view.setNeedsUpdateConfigurationCallCount, 1)
+		XCTAssertEqual(view.setNeedsUpdateConstraintsCallCount, 0)
         XCTAssertEqual(view.setNeedsDisplayCallCount, 1)
-        XCTAssertFalse(view.invalidateIntrinsicContentSizeCalled)
-        XCTAssertFalse(view.setNeedsLayoutCalled)
+        XCTAssertEqual(view.invalidateIntrinsicContentSizeCallCount, 1)
+		XCTAssertEqual(view.setNeedsLayoutCallCount, 0)
     }
 
     func testConstraints() {
@@ -29,11 +29,11 @@ final class InvalidatesTests: XCTestCase {
 
         view.customProperty = "Hello, tests!"
 
-        XCTAssertFalse(view.setNeedsUpdateConfigurationCalled)
-        XCTAssertTrue(view.setNeedsUpdateConstraintsCalled)
+		XCTAssertEqual(view.setNeedsUpdateConfigurationCallCount, 0)
+		XCTAssertEqual(view.setNeedsUpdateConstraintsCallCount, 1)
         XCTAssertEqual(view.setNeedsDisplayCallCount, 1)
-        XCTAssertFalse(view.invalidateIntrinsicContentSizeCalled)
-        XCTAssertFalse(view.setNeedsLayoutCalled)
+		XCTAssertEqual(view.invalidateIntrinsicContentSizeCallCount, 1)
+		XCTAssertEqual(view.setNeedsLayoutCallCount, 0)
     }
 
     func testDisplay() {
@@ -46,11 +46,11 @@ final class InvalidatesTests: XCTestCase {
 
         view.customProperty = "Hello, tests!"
 
-        XCTAssertFalse(view.setNeedsUpdateConfigurationCalled)
-        XCTAssertFalse(view.setNeedsUpdateConstraintsCalled)
+		XCTAssertEqual(view.setNeedsUpdateConfigurationCallCount, 0)
+		XCTAssertEqual(view.setNeedsUpdateConstraintsCallCount, 0)
         XCTAssertEqual(view.setNeedsDisplayCallCount, 2)
-        XCTAssertFalse(view.invalidateIntrinsicContentSizeCalled)
-        XCTAssertFalse(view.setNeedsLayoutCalled)
+		XCTAssertEqual(view.invalidateIntrinsicContentSizeCallCount, 1)
+		XCTAssertEqual(view.setNeedsLayoutCallCount, 0)
     }
 
     func testIntrinsicContentSize() {
@@ -63,11 +63,11 @@ final class InvalidatesTests: XCTestCase {
 
         view.customProperty = "Hello, tests!"
 
-        XCTAssertFalse(view.setNeedsUpdateConfigurationCalled)
-        XCTAssertFalse(view.setNeedsUpdateConstraintsCalled)
+		XCTAssertEqual(view.setNeedsUpdateConfigurationCallCount, 0)
+		XCTAssertEqual(view.setNeedsUpdateConstraintsCallCount, 0)
         XCTAssertEqual(view.setNeedsDisplayCallCount, 1)
-        XCTAssertTrue(view.invalidateIntrinsicContentSizeCalled)
-        XCTAssertFalse(view.setNeedsLayoutCalled)
+		XCTAssertEqual(view.invalidateIntrinsicContentSizeCallCount, 2)
+		XCTAssertEqual(view.setNeedsLayoutCallCount, 0)
     }
 
     func testLayout() {
@@ -80,11 +80,11 @@ final class InvalidatesTests: XCTestCase {
 
         view.customProperty = "Hello, tests!"
 
-        XCTAssertFalse(view.setNeedsUpdateConfigurationCalled)
-        XCTAssertFalse(view.setNeedsUpdateConstraintsCalled)
-        XCTAssertEqual(view.setNeedsDisplayCallCount, 1)
-        XCTAssertFalse(view.invalidateIntrinsicContentSizeCalled)
-        XCTAssertTrue(view.setNeedsLayoutCalled)
+		XCTAssertEqual(view.setNeedsUpdateConfigurationCallCount, 0)
+		XCTAssertEqual(view.setNeedsUpdateConstraintsCallCount, 0)
+		XCTAssertEqual(view.setNeedsDisplayCallCount, 1)
+		XCTAssertEqual(view.invalidateIntrinsicContentSizeCallCount, 1)
+		XCTAssertEqual(view.setNeedsLayoutCallCount, 1)
     }
 
     func testBothDisplayAndLayout() {
@@ -97,25 +97,35 @@ final class InvalidatesTests: XCTestCase {
 
         view.customProperty = "Hello, tests!"
 
-        // Validate the Tuple signature
-        for property in Mirror(reflecting: view).children where property.label == "_customProperty" {
-            XCTAssertTrue(property.value is Invalidates<String, UIView.Invalidation.Tuple<UIView.Invalidation.Display, UIView.Invalidation.Layout>>)
+		XCTAssertEqual(view.setNeedsUpdateConfigurationCallCount, 0)
+		XCTAssertEqual(view.setNeedsUpdateConstraintsCallCount, 0)
+        XCTAssertEqual(view.setNeedsDisplayCallCount, 2)
+		XCTAssertEqual(view.invalidateIntrinsicContentSizeCallCount, 1)
+		XCTAssertEqual(view.setNeedsLayoutCallCount, 1)
+    }
+
+    func testMoreThanFiveInvalidations() {
+        final class View: TestView {
+            @Invalidates(.display, .layout, .constraints, .intrinsicContentSize, .display, .layout)
+            var customProperty = ""
         }
 
-        XCTAssertFalse(view.setNeedsUpdateConfigurationCalled)
-        XCTAssertFalse(view.setNeedsUpdateConstraintsCalled)
-        XCTAssertEqual(view.setNeedsDisplayCallCount, 2)
-        XCTAssertFalse(view.invalidateIntrinsicContentSizeCalled)
-        XCTAssertTrue(view.setNeedsLayoutCalled)
+        let view = View()
+        view.customProperty = "Hello, tests!"
+
+        XCTAssertEqual(view.setNeedsDisplayCallCount, 3) // initial, +2 in @Invalidates
+        XCTAssertEqual(view.setNeedsLayoutCallCount, 2)
+        XCTAssertEqual(view.setNeedsUpdateConstraintsCallCount, 1)
+		XCTAssertEqual(view.invalidateIntrinsicContentSizeCallCount, 2) // initial, +1 in @Invalidates
     }
 }
 
 private extension InvalidatesTests {
     func testInitialState<View: TestView>(_ view: View) {
-        XCTAssertFalse(view.setNeedsUpdateConfigurationCalled)
-        XCTAssertFalse(view.setNeedsUpdateConstraintsCalled)
+        XCTAssertEqual(view.setNeedsUpdateConfigurationCallCount, 0)
+        XCTAssertEqual(view.setNeedsUpdateConstraintsCallCount, 0)
         XCTAssertEqual(view.setNeedsDisplayCallCount, 1)
-        XCTAssertFalse(view.invalidateIntrinsicContentSizeCalled)
-        XCTAssertFalse(view.setNeedsLayoutCalled)
+		XCTAssertEqual(view.invalidateIntrinsicContentSizeCallCount, 1)
+        XCTAssertEqual(view.setNeedsLayoutCallCount, 0)
     }
 }
